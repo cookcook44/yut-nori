@@ -11,6 +11,8 @@ cnt = 0
 from socket import socket, AF_INET, SOCK_DGRAM
 BUF_SIZE = 1024
 sock = socket(AF_INET, SOCK_DGRAM)
+RED = (254, 99, 99)
+BLUE = (99, 125, 254)
 
 class Utils:
     def __init__(self):
@@ -26,7 +28,7 @@ class Utils:
         self.turnover = 0
         self.who = '_' # 내부에서 저장된 유저 색
         self.verified = 0
-        self.prematch = [-1,-1]
+        self.prematch = [-1,-1] 
         self.user = 0 # 터미널로 구분하는 유저
         self.stop = 0
         self.stoptwo = 0
@@ -47,6 +49,13 @@ class Utils:
             self.turn = 'R'
         self.rollable = 1
         utils.usable = []
+        def send_turn():
+            for _ in range(10):
+                msg = str('change').encode("utf-8")
+                sock.sendto(msg, link.opp_addr)
+                pygame.time.delay(20)
+        thread4 = Thread(target=send_turn)
+        thread4.start()
     
     def number_to_yut(self, x):
         if x == -1:
@@ -240,24 +249,13 @@ class Image:
                     self.yut[i] = random.randint(0,1)
                     if self.yut[i] == 1:
                         saver += 1
-                def send_one():
-                    while True:
+                def send_saver():
+                    for _ in range(10):
                         msg = str(saver).encode("utf-8")
                         sock.sendto(msg, link.opp_addr)
-                        if utils.stop == 1:
-                            break
-                def send_two():
-                    while True:
-                        msg = str(saver).encode("utf-8")
-                        sock.sendto(msg, link.opp_addr)
-                        if utils.stoptwo == 1:
-                            break
-                if utils.user == 1:
-                    thread1 = Thread(target=send_one)
-                    thread1.start()
-                else:
-                    thread2 = Thread(target=send_two)
-                    thread2.start()
+                        pygame.time.delay(20)
+                thread1 = Thread(target=send_saver)
+                thread1.start()
                 if saver == 0:
                     utils.prematch[utils.user-1] = 2
                 elif saver == 1:
@@ -323,6 +321,27 @@ class Shape:
             pygame.draw.circle(screen, (248, 176, 85), (60, 540), 30)
             pygame.draw.circle(screen, (248, 176, 85), (540, 540), 30)
             pygame.draw.circle(screen, (248, 176, 85), (300, 300), 30)
+
+            if not hasattr(utils, 'turnchange'):
+                def get_turn():
+                    while True:
+                        try:
+                            data, addr = sock.recvfrom(1024)
+                            sent_msg = data.decode('utf-8')
+                            if sent_msg == 'change':
+                                if utils.turn == 'R':
+                                    utils.turn = 'B'
+                                elif utils.turn == 'B':
+                                    utils.turn = 'R'
+                            else:
+                                print('else')
+                        except:
+                            pass
+                
+                thread5 = Thread(target=get_turn, daemon=True)
+                thread5.start()
+                utils.turnchange = True
+
         elif utils.verified == 0:
             pygame.draw.rect(screen, (255, 245, 161), (100, 130, 400, 150))
             pygame.draw.rect(screen, (255, 245, 161), (100, 320, 400, 150))
@@ -337,44 +356,28 @@ class Shape:
             elif utils.prematch[utils.user-1] == 0:
                 screen.blit(image.yut_front_small, utils.center_to_lefttop((275, 205), (40, 105)))
                 screen.blit(image.yut_front_small, utils.center_to_lefttop((325, 205), (40, 105)))
-            def get_one():
-                while True:
-                    data, addr = sock.recvfrom(1024)#BUF_SIZE)
-                    sent_msg = data.decode('utf-8')
-                    if sent_msg == '0':
-                        utils.prematch[abs(utils.user-2)] = 2
-                        utils.stop = 1
-                        break
-                    elif sent_msg == '1':
-                        utils.prematch[abs(utils.user-2)] = 1
-                        utils.stop = 1
-                        break
-                    else:
-                        utils.prematch[abs(utils.user-2)] = 0
-                        utils.stop = 1
-                        break
-            def get_two():
-                while True:
-                    data, addr = sock.recvfrom(1024)#BUF_SIZE)
-                    sent_msg = data.decode('utf-8')
-                    if sent_msg == '0':
-                        utils.prematch[abs(utils.user-2)] = 2
-                        utils.stoptwo = 1
-                        break
-                    elif sent_msg == '1':
-                        utils.prematch[abs(utils.user-2)] = 1
-                        utils.stoptwo = 1
-                        break
-                    else:
-                        utils.prematch[abs(utils.user-2)] = 0
-                        utils.stoptwo = 1
-                        break
-            if utils.user == 2:
-                thread3 = Thread(target=get_one)
+            elif utils.prematch[utils.user-1] == 0:
+                screen.blit(image.yut_front_small, utils.center_to_lefttop((275, 205), (40, 105)))
+                screen.blit(image.yut_front_small, utils.center_to_lefttop((325, 205), (40, 105)))
+            
+            if not hasattr(utils, 'dataget'):
+                def get_data():
+                    while True:
+                        try:
+                            data, addr = sock.recvfrom(1024)
+                            sent_msg = data.decode('utf-8')
+                            if sent_msg == '0':
+                                utils.prematch[abs(utils.user-2)] = 2
+                            elif sent_msg == '1':
+                                utils.prematch[abs(utils.user-2)] = 1
+                            else:
+                                utils.prematch[abs(utils.user-2)] = 0
+                        except:
+                            pass
+                
+                thread3 = Thread(target=get_data, daemon=True)
                 thread3.start()
-            else:
-                thread4 = Thread(target=get_two)
-                thread4.start()
+                utils.dataget = True
                 
             if utils.prematch[abs(utils.user-2)] == 2:
                 screen.blit(image.yut_back_small, utils.center_to_lefttop((275, 395), (40, 105)))
@@ -385,45 +388,50 @@ class Shape:
             elif utils.prematch[abs(utils.user-2)] == 0:
                 screen.blit(image.yut_front_small, utils.center_to_lefttop((275, 395), (40, 105)))
                 screen.blit(image.yut_front_small, utils.center_to_lefttop((325, 395), (40, 105)))
+            
             # 다르면 결과, 안 다르면 다시 하기
             if utils.prematch[utils.user-1] != -1 and utils.prematch[abs(utils.user-2)] != -1:
                 if utils.prematch[utils.user-1] == utils.prematch[abs(utils.user-2)]:
                     utils.roll += 1
                     utils.rollable += 1
+                    utils.prematch = [-1, -1] # 비기면 3개 초기화
                 else:
-                    if utils.prematch[utils.user-1] > utils.prematch[abs(utils.user-2)]:
+                    if utils.prematch[0] > utils.prematch[1]:
                         if utils.user == 1:
-                            utils.who == 'R' # red가 선
+                            utils.who = 'R' # red가 선
                         else:
-                            utils.who == 'B'
+                            utils.who = 'B'
                     else:
                         if utils.user == 1:
-                            utils.who == 'B' # red가 선
+                            utils.who = 'B' # red가 선
                         else:
-                            utils.who == 'R'
+                            utils.who = 'R'
                     if utils.who == 'R':
                         saverfd = '빨강 (선공)'
                     else:
                         saverfd = '파랑 (후공)'
                     utils.draw_text_center(text=f"당신: {saverfd}", center=(300, 280), color=(0,0,0), font_size = 40)
                     global cnt
-                    if cnt > 150:
+                    if cnt > 250:
                         cnt = 0
-                    if cnt > 140:
+                    if cnt > 240:
+                        utils.rollable = 1
+                        #utils.roll = -1
                         utils.verified = 1
                 
 
 
     def yut(self):
         if utils.rollable > 0 and utils.verified == 1:
-            utils.draw_text_center(text=f"{utils.rollable}", center=(1170, 70), font_size=40)
+            utils.draw_text_center(text=f"{utils.rollable}", center=(1170, 70), font_size=35)
         if utils.who == 'R':
             pygame.draw.circle(screen, (254, 99, 99), (1170, 35), 17)
         elif utils.who == 'B': 
             pygame.draw.circle(screen, (99, 125, 254), (1170, 35), 17)
         if utils.selected == 2 and utils.rollable > 0:
-            pygame.draw.rect(screen, (215, 255, 128), (800, 260, 200, 80))
-            utils.draw_text_center(text="굴리기", center=(900, 300), font_size=40)
+            if utils.verified != 1 or utils.who == utils.turn:
+                pygame.draw.rect(screen, (215, 255, 128), (800, 260, 200, 80))
+                utils.draw_text_center(text="굴리기", center=(900, 300), font_size=40)
         
         if utils.verified == 1:
             if utils.selected == 3:
@@ -494,6 +502,11 @@ class Shape:
             if utils.turnover > 0:
                 utils.turnover -= 1
                 utils.draw_text_center(text=f"빽도를 쓸 수 없어서 턴 넘어감", center=(300, 280), color=(0,0,0), font_size = 40)
+
+            #if utils.who == 'R':
+            #    pygame.draw.circle(screen, RED, (1190, 10), 10)
+            #elif utils.who == 'B':
+            #     pygame.draw.circle(screen, BLUE, (1190, 10), 10)
         
 
 class Mouse:
@@ -516,7 +529,7 @@ class Mouse:
                     utils.roll = 1
                     utils.selected = -1
                     cnt = 0
-                elif mouse.check((650, 175), (500, 250), self.x, self.y) and cnt>20:
+                elif mouse.check((650, 175), (500, 250), self.x, self.y) and cnt>20 and (utils.verified != 1 or utils.who == utils.turn):
                     utils.selected = 2
                     cnt = 0
 
@@ -525,17 +538,17 @@ class Mouse:
                     utils.roll = 1
                     utils.selected = -1
                     cnt = 0
-                elif mouse.check((650, 175), (500, 250), self.x, self.y) and cnt>20:
+                elif mouse.check((650, 175), (500, 250), self.x, self.y) and cnt>20 and (utils.verified != 1 or utils.who == utils.turn):
                     utils.selected = 2
                     cnt = 0
-                if mouse.check((650, 450), (80, 125), self.x, self.y):
+                if mouse.check((650, 450), (80, 125), self.x, self.y) and (utils.verified != 1 or utils.who == utils.turn):
                     utils.selected = 3
-                if mouse.check((755, 450), (185, 125), self.x, self.y):
+                if mouse.check((755, 450), (185, 125), self.x, self.y) and (utils.verified != 1 or utils.who == utils.turn):
                     utils.selected = 4
-                if mouse.check((965, 450), (185, 125), self.x, self.y):
+                if mouse.check((965, 450), (185, 125), self.x, self.y) and (utils.verified != 1 or utils.who == utils.turn):
                     utils.selected = 5
                 for i in range(len(utils.usable)):
-                    if mouse.check((650+i*105, 25), (80, 125), self.x, self.y):
+                    if mouse.check((650+i*105, 25), (80, 125), self.x, self.y) and (utils.verified != 1 or utils.who == utils.turn):
                         shape.wanna_move = i+1 # 움직일 족보 선택함
                 if shape.wanna_move != -1 and ((utils.selected == 4 and utils.turn == 'R') or (utils.selected == 5 and utils.turn == 'B')) and utils.loc_to_number(self.x, self.y, utils.turn) == utils.number_to_yut(utils.usable[shape.wanna_move-1])[2] and utils.loc_to_number(self.x, self.y, utils.turn) != -1: # 누른 곳이 갈 수 있는 칸과 같으면 
                     if (utils.turn == 'R' and utils.left[0] >= 1) or (utils.turn == 'B' and utils.left[1] >= 1):
@@ -579,7 +592,7 @@ class Mouse:
                         
                 elif shape.wanna_move != -1:
                     boardloc = utils.loc_to_number(self.x, self.y, utils.turn) # boardloc는 현재 마우스 위치 -> 보드에서의 숫자
-                    if (utils.selected != 6 or boardloc != (utils.where_to_go(utils.mal,utils.number_to_yut(utils.usable[shape.wanna_move-1])[2], utils.turn))) and boardloc != -1 and utils.board[boardloc][0] == utils.turn and boardloc != 30 and boardloc != 31: # 자기 기물을 누름
+                    if (utils.selected != 6 or boardloc != (utils.where_to_go(utils.mal,utils.number_to_yut(utils.usable[shape.wanna_move-1])[2], utils.turn))) and boardloc != -1 and utils.board[boardloc][0] == utils.turn and boardloc != 30 and boardloc != 31 and (utils.verified != 1 or utils.who == utils.turn): # 자기 기물을 누름
                         utils.selected = 6
                         utils.mal = boardloc # 처음에 자기 기물 누를 때 utils.mal에 boardloc를 저장해놓음 
                     elif utils.selected == 6 and boardloc == (utils.where_to_go(utils.mal,utils.number_to_yut(utils.usable[shape.wanna_move-1])[2], utils.turn)): # 자기 기물을 누른 상태에서 족보 고르고 갈 곳 누름
@@ -664,4 +677,3 @@ while True:
 
     clock.tick(90)
     cnt += 1
-    print(cnt)
