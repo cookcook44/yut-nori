@@ -7,19 +7,15 @@ pygame.init()
 screen_size = (1200,600)
 screen = pygame.display.set_mode((1200,600))
 clock = pygame.time.Clock()
-cnt = 0
-from socket import socket, AF_INET, SOCK_DGRAM
-BUF_SIZE = 1024
-sock = socket(AF_INET, SOCK_DGRAM)
 RED = (254, 99, 99)
 BLUE = (99, 125, 254)
 
-import link
+from link import _link
+from utils import _utils
 import shape
 import image
 import mouse
 
-_link = link.Link()  # 1
 _shape = shape.Shape()
 _image = image.Image()
 _mouse = mouse.Mouse()
@@ -45,4 +41,4 @@ while True:
     pygame.display.flip()
 
     clock.tick(90)
-    cnt += 1
+    _utils.cnt += 1

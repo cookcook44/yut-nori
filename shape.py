@@ -6,9 +6,9 @@ import sys
 pygame.init()
 screen_size = (1200,600)
 screen = pygame.display.set_mode((1200,600))
-from socket import socket, AF_INET, SOCK_DGRAM
-sock = socket(AF_INET, SOCK_DGRAM)
 
+from link import sock
+from link import _link
 from utils import _utils
 import image
 
@@ -51,7 +51,7 @@ class Shape:
                                 elif _utils.turn == 'B':
                                     _utils.turn = 'R'
                             else:
-                                print('else')
+                                print('else') # 프린트되면 오류임
                         except:
                             pass
                 
@@ -95,7 +95,7 @@ class Shape:
                 thread3 = Thread(target=get_data, daemon=True)
                 thread3.start()
                 _utils.dataget = True
-            print(_utils.user) # 만일 0이면, link.py가 먼저 되고 utils의 __init__이 되는 것
+            #print(_utils.user) # 만일 0이면, link.py가 먼저 되고 utils의 __init__이 되는 것
             if _utils.prematch[abs(_utils.user-2)] == 2:
                 screen.blit(_image.yut_back_small, _utils.center_to_lefttop((275, 395), (40, 105)))
                 screen.blit(_image.yut_back_small, _utils.center_to_lefttop((325, 395), (40, 105)))
@@ -128,10 +128,9 @@ class Shape:
                     else:
                         saverfd = '파랑 (후공)'
                     _utils.draw_text_center(text=f"당신: {saverfd}", center=(300, 280), color=(0,0,0), font_size = 40)
-                    global cnt
-                    if cnt > 250:
-                        cnt = 0
-                    if cnt > 240:
+                    if _utils.cnt > 250:
+                        _utils.cnt = 0
+                    if _utils.cnt > 240:
                         _utils.rollable = 1
                         #_utils.roll = -1 
                         _utils.verified = 1

@@ -6,14 +6,13 @@ import sys
 pygame.init()
 screen_size = (1200,600)
 screen = pygame.display.set_mode((1200,600))
-from socket import socket, AF_INET, SOCK_DGRAM
-sock = socket(AF_INET, SOCK_DGRAM)
 
-import link
+from link import sock
+from link import _link
 # import utils
 # _utils = utils.Utils()
 from utils import _utils
-_link = link.Link()
+
 
 
 class Image:

@@ -6,10 +6,6 @@ import sys
 pygame.init()
 screen_size = (1200,600)
 screen = pygame.display.set_mode((1200,600))
-from socket import socket, AF_INET, SOCK_DGRAM
-sock = socket(AF_INET, SOCK_DGRAM)
-
-import link as link
 
 class Utils:
     def __init__(self):  # 생성자 함수
@@ -29,6 +25,7 @@ class Utils:
         self.user = 0 # 터미널로 구분하는 유저
         self.stop = 0
         self.stoptwo = 0
+        self.cnt = 0
         for _ in range(32):
             self.board.append(['_',0])
     def center_to_lefttop(self, center, size):
@@ -40,6 +37,8 @@ class Utils:
         text_rect = text.get_rect(center=center)
         screen.blit(text, text_rect)
     def turn_change(self):
+        from link import sock
+        from link import _link
         if self.turn == 'R':
             self.turn = 'B'
         elif self.turn == 'B':
@@ -68,7 +67,7 @@ class Utils:
         def send_turn():
             for _ in range(10):
                 msg = str('change').encode("utf-8")
-                sock.sendto(msg, link.opp_addr)
+                sock.sendto(msg, _link.opp_addr)
                 pygame.time.delay(20)
         thread4 = Thread(target=send_turn)
         thread4.start()

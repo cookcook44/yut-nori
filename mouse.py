@@ -6,12 +6,11 @@ import sys
 pygame.init()
 screen_size = (1200,600)
 screen = pygame.display.set_mode((1200,600))
-from socket import socket, AF_INET, SOCK_DGRAM
-sock = socket(AF_INET, SOCK_DGRAM)
 
 
 import shape
-import link
+from link import sock
+from link import _link
 from utils import _utils
 
 _shape = shape.Shape()
@@ -27,27 +26,26 @@ class Mouse:
             return False
 
     def click(self):
-        global cnt
         if (pygame.mouse.get_pressed (num_buttons = 3)[0] == True) and _utils.gameover == '_':
             self.x = pygame.mouse.get_pos ( )[0]
             self.y = pygame.mouse.get_pos ( )[1]
             if _utils.verified == 0:
-                if _utils.selected == 2 and _utils.rollable > 0 and self.check((800, 260), (200, 80), self.x, self.y) and cnt>20:
+                if _utils.selected == 2 and _utils.rollable > 0 and self.check((800, 260), (200, 80), self.x, self.y) and _utils.cnt>20:
                     _utils.roll = 1
                     _utils.selected = -1
-                    cnt = 0
-                elif self.check((650, 175), (500, 250), self.x, self.y) and cnt>20 and (_utils.verified != 1 or _utils.who == _utils.turn):
+                    _utils.cnt = 0
+                elif self.check((650, 175), (500, 250), self.x, self.y) and _utils.cnt>20 and (_utils.verified != 1 or _utils.who == _utils.turn):
                     _utils.selected = 2
-                    cnt = 0
+                    _utils.cnt = 0
 
             elif _utils.verified == 1:
-                if _utils.selected == 2 and _utils.rollable > 0 and self.check((800, 260), (200, 80), self.x, self.y) and cnt>20:
+                if _utils.selected == 2 and _utils.rollable > 0 and self.check((800, 260), (200, 80), self.x, self.y) and _utils.cnt>20:
                     _utils.roll = 1
                     _utils.selected = -1
-                    cnt = 0
-                elif self.check((650, 175), (500, 250), self.x, self.y) and cnt>20 and (_utils.verified != 1 or _utils.who == _utils.turn):
+                    _utils.cnt = 0
+                elif self.check((650, 175), (500, 250), self.x, self.y) and _utils.cnt>20 and (_utils.verified != 1 or _utils.who == _utils.turn):
                     _utils.selected = 2
-                    cnt = 0
+                    _utils.cnt = 0
                 if self.check((650, 450), (80, 125), self.x, self.y) and (_utils.verified != 1 or _utils.who == _utils.turn):
                     _utils.selected = 3
                 if self.check((755, 450), (185, 125), self.x, self.y) and (_utils.verified != 1 or _utils.who == _utils.turn):
@@ -96,7 +94,7 @@ class Mouse:
                             def send_move():
                                 for _ in range(10):
                                     msg = str(f"f0{boardloc}{_utils.turn}").encode("utf-8") # m/f (f는 first, m는 move), 첫 위치, 이동한 위치, 색 총 4자리 
-                                    sock.sendto(msg, link.opp_addr)
+                                    sock.sendto(msg, _link.opp_addr)
                                     pygame.time.delay(20)
                             thread6 = Thread(target=send_move)
                             thread6.start()
