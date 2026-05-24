@@ -7,15 +7,12 @@ pygame.init()
 screen_size = (1200,600)
 screen = pygame.display.set_mode((1200,600))
 from socket import socket, AF_INET, SOCK_DGRAM
-BUF_SIZE = 1024
 sock = socket(AF_INET, SOCK_DGRAM)
-RED = (254, 99, 99)
-BLUE = (99, 125, 254)
 
 import link as link
 
 class Utils:
-    def __init__(self):
+    def __init__(self):  # 생성자 함수
         self.turn = 'R' # 누구 차례인지
         self.left = [3,3]
         self.usable = []
@@ -232,87 +229,5 @@ class Utils:
         elif l == 30 or l == 31:
             return -2
 
-class Image:
-    def __init__(self):
-        self.yut_back = pygame.image.load("z_img/yut_back.png")
-        self.yut_back = pygame.transform.scale(self.yut_back, (80, 210))
-        self.yut_front = pygame.image.load("z_img/yut_front.png")
-        self.yut_front = pygame.transform.scale(self.yut_front, (80, 210))
-        self.yut_special = pygame.image.load("z_img/yut_special.png")
-        self.yut_special = pygame.transform.scale(self.yut_special, (80, 210))
-        self.yut = [0,0,0,0]
-        self.yut_back_small = pygame.transform.scale(self.yut_back, (40, 105))
-        self.yut_front_small = pygame.transform.scale(self.yut_front, (40, 105))
-    def always(self):
-        if utils.roll == -1:
-            if utils.verified == 0:
-                for i in range(2):
-                    if self.yut[i] == 0:
-                        screen.blit(self.yut_back, utils.center_to_lefttop((850 + 100*i, 300), (80, 210)))
-                    else:
-                        screen.blit(self.yut_front, utils.center_to_lefttop((850 + 100*i, 300), (80, 210)))
-            elif utils.verified == 1:
-                for i in range(3):
-                    if self.yut[i] == 0:
-                        screen.blit(self.yut_back, utils.center_to_lefttop((750 + 100*i, 300), (80, 210)))
-                    else:
-                        screen.blit(self.yut_front, utils.center_to_lefttop((750 + 100*i, 300), (80, 210)))
-                    if self.yut[3] == 0:
-                        screen.blit(self.yut_back, utils.center_to_lefttop((750 + 300, 300), (80, 210)))
-                    else:
-                        screen.blit(self.yut_special, utils.center_to_lefttop((750 + 300, 300), (80, 210)))
-        elif utils.roll == 1:
-            if utils.verified == 0:
-                saver = 0
-                for i in range(2):
-                    self.yut[i] = random.randint(0,1)
-                    if self.yut[i] == 1:
-                        saver += 1
-                def send_saver():
-                    for _ in range(10):
-                        msg = str(saver).encode("utf-8")
-                        sock.sendto(msg, link.opp_addr)
-                        pygame.time.delay(20)
-                thread1 = Thread(target=send_saver)
-                thread1.start()
-                if saver == 0:
-                    utils.prematch[utils.user-1] = 2
-                elif saver == 1:
-                    utils.prematch[utils.user-1] = 1
-                else:
-                    utils.prematch[utils.user-1] = 0
-                utils.roll = -1
-                utils.rollable -= 1
-
-            elif utils.verified == 1:
-                saver = 0
-                for i in range(3):
-                    self.yut[i] = random.randint(0,1)
-                    if self.yut[i] == 1:
-                        saver += 1
-
-                if saver == 0:
-                    self.yut[3] = random.randint(0,1)
-                    saver -= self.yut[3]
-                elif saver != 0:
-                    self.yut[3] = random.randint(0,1)
-                    saver += self.yut[3]
-                # k = random.randint(0,1)
-                # if k == 0:
-                #     saver = -1
-                # elif k == 1:
-                #     saver = 1
-
-                utils.usable.append(saver)
-                utils.roll = -1
-                if utils.number_to_yut(saver)[1] == 0:
-                    utils.rollable -= 1
-                utils.selected = -1
-        if len(utils.usable) == 1 and utils.verified == 1:
-            if utils.usable[0] == -1:
-                if utils.turn == 'R' and (utils.board[30][1] + utils.left[0]) == 3:
-                    utils.turnover = 300
-                    utils.turn_change()
-                elif utils.turn == 'B' and (utils.board[31][1] + utils.left[1]) == 3:
-                    self.turnover = 300
-                    self.turn_change()
+_utils = Utils()  # utils.py 모듈에서 단 한번만 인스턴스를 생성하고,
+# 이것이 필요한 다른 모듈에서 _utils 변수를 import하여 사용한다.

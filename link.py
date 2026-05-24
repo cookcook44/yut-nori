@@ -1,8 +1,8 @@
 from socket import socket, AF_INET, SOCK_DGRAM
-BUF_SIZE = 1024
 sock = socket(AF_INET, SOCK_DGRAM)
 
-import utils as utils
+from utils import _utils
+
 
 class Link:
     def __init__(self):
@@ -15,9 +15,11 @@ class Link:
             self.my_addr = ("127.0.0.1", 8000)
             self.opp_addr = ("127.0.0.1", 8001)
             sock.bind(self.my_addr)
-            utils.user = 1
+            _utils.user = 1
+            print("1p임")
         except OSError:
             self.my_addr = ("127.0.0.1", 8001)
             self.opp_addr = ("127.0.0.1", 8000)
             sock.bind(self.my_addr)
-            utils.user = 2
+            _utils.user = 2
+            print("2p임")
