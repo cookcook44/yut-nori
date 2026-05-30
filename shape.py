@@ -73,9 +73,9 @@ class Shape:
             elif _utils.prematch[_utils.user-1] == 0:
                 screen.blit(_image.yut_front_small, _utils.center_to_lefttop((275, 205), (40, 105)))
                 screen.blit(_image.yut_front_small, _utils.center_to_lefttop((325, 205), (40, 105)))
-            elif _utils.prematch[_utils.user-1] == 0:
-                screen.blit(_image.yut_front_small, _utils.center_to_lefttop((275, 205), (40, 105)))
-                screen.blit(_image.yut_front_small, _utils.center_to_lefttop((325, 205), (40, 105)))
+            #elif _utils.prematch[0] == _utils.prematch[1] == -1:
+            #    screen.blit(_image.yut_front_small, _utils.center_to_lefttop((275, 205), (40, 105)))
+            #    screen.blit(_image.yut_front_small, _utils.center_to_lefttop((325, 205), (40, 105)))
             
             if not hasattr(_utils, 'dataget'):
                 def get_data():
@@ -109,9 +109,15 @@ class Shape:
             # 다르면 결과, 안 다르면 다시 하기
             if _utils.prematch[_utils.user-1] != -1 and _utils.prematch[abs(_utils.user-2)] != -1:
                 if _utils.prematch[_utils.user-1] == _utils.prematch[abs(_utils.user-2)]:
-                    _utils.roll += 1
-                    _utils.rollable += 1
-                    _utils.prematch = [-1, -1] # 비기면 3개 초기화
+                    _utils.draw_text_center(text=f"무승부! 다시 던지세요", center=(300, 280), color=(0,0,0), font_size = 40)
+                    if _utils.cnt > 200:
+                        _utils.cnt = 0
+                    if _utils.cnt > 190:
+                        _utils.roll = -1
+                        _utils.rollable += 1
+                        _utils.prematch = [-1, -1]
+                        _utils.verified = 0
+                        _image.yut = [0,0,0,0] # 비기면 5개 초기화
                 else:
                     if _utils.prematch[0] > _utils.prematch[1]:
                         if _utils.user == 1:

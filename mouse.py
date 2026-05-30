@@ -29,6 +29,7 @@ class Mouse:
         if (pygame.mouse.get_pressed (num_buttons = 3)[0] == True) and _utils.gameover == '_':
             self.x = pygame.mouse.get_pos ( )[0]
             self.y = pygame.mouse.get_pos ( )[1]
+            #print(_utils.selected)
             if _utils.verified == 0:
                 if _utils.selected == 2 and _utils.rollable > 0 and self.check((800, 260), (200, 80), self.x, self.y) and _utils.cnt>20:
                     _utils.roll = 1
@@ -55,6 +56,7 @@ class Mouse:
                 for i in range(len(_utils.usable)):
                     if self.check((650+i*105, 25), (80, 125), self.x, self.y) and (_utils.verified != 1 or _utils.who == _utils.turn):
                         _shape.wanna_move = i+1 # 움직일 족보 선택함
+                        
                 if _shape.wanna_move != -1 and ((_utils.selected == 4 and _utils.turn == 'R') or (_utils.selected == 5 and _utils.turn == 'B')) and _utils.loc_to_number(self.x, self.y, _utils.turn) == _utils.number_to_yut(_utils.usable[_shape.wanna_move-1])[2] and _utils.loc_to_number(self.x, self.y, _utils.turn) != -1: # 누른 곳이 갈 수 있는 칸과 같으면 
                     if (_utils.turn == 'R' and _utils.left[0] >= 1) or (_utils.turn == 'B' and _utils.left[1] >= 1):
                         boardloc = _utils.loc_to_number(self.x, self.y, _utils.turn)

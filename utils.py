@@ -13,7 +13,7 @@ class Utils:
         self.left = [3,3]
         self.usable = []
         self.selected = -1
-        self.roll = -1
+        self.roll = -1 # 굴리고 있음을 뜻하는듯
         self.rollable = 1
         self.board = []
         self.mal = -1
@@ -228,5 +228,4 @@ class Utils:
         elif l == 30 or l == 31:
             return -2
 
-_utils = Utils()  # utils.py 모듈에서 단 한번만 인스턴스를 생성하고,
-# 이것이 필요한 다른 모듈에서 _utils 변수를 import하여 사용한다.
+_utils = Utils()  # utils.py에서 한 번만 생성하고 필요한 다른 곳에서 _utils를 import해서 샤용하기
