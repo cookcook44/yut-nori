@@ -3,7 +3,9 @@ import pygame
 import copy
 import random
 import sys
-pygame.init()
+# pygame.init()
+pygame.font.init()
+
 screen_size = (1200,600)
 screen = pygame.display.set_mode((1200,600))
 clock = pygame.time.Clock()

@@ -26,8 +26,76 @@ class Utils:
         self.stop = 0
         self.stoptwo = 0
         self.cnt = 0
+        self.wanna_move = -1
         for _ in range(32):
             self.board.append(['_',0])
+    def start_listener(self):
+        from link import sock
+        def listen():
+            while True:
+                try:
+                    data, addr = sock.recvfrom(1024)
+                    msg = data.decode('utf-8')
+
+                    if msg.startswith('turn'):
+                        new_turn = msg.split(':')[1]
+                        if self.turn != new_turn:
+                            self.turn = new_turn
+                            self.rollable = 1
+                            self.usable = []
+                    elif msg in ['0', '1', '2']: 
+                        if msg == '0':
+                            self.prematch[abs(self.user-2)] = 2
+                        elif msg == '1':
+                            self.prematch[abs(self.user-2)] = 1
+                        else:
+                            self.prematch[abs(self.user-2)] = 0
+                    elif msg.startswith('f:') or msg.startswith('m:'):
+                        parts = msg.split(':')
+                        msg_id = int(parts[-1]) # 마지막메시지 id 가져오기
+                        
+                        # 같으면 무시
+                        if msg_id == getattr(self, 'last_msg_id', -1):
+                            continue
+                        self.last_msg_id = msg_id # 새로운 메시지 id기억
+                        
+                        if msg.startswith('f:'):
+                            dest, left = int(parts[1]), int(parts[2])
+                            # self.who를 써야지 멍청아
+                            opp_color = 'B' if self.who == 'R' else 'R'
+                            
+                            self.left[abs(self.user-2)] = left
+                            if self.board[dest][0] == '_':
+                                self.board[dest] = [opp_color, 1]
+                            elif self.board[dest][0] == opp_color:
+                                self.board[dest][1] += 1
+                            else: # 내 말이 잡힌 경우
+                                self.left[self.user-1] += self.board[dest][1]
+                                self.board[dest] = [opp_color, 1]
+                                
+                        elif msg.startswith('m:'):
+                            src, dest, left = int(parts[1]), int(parts[2]), int(parts[3])
+                            opp_color = 'B' if self.who == 'R' else 'R'
+                            
+                            self.left[abs(self.user-2)] = left
+                            count = self.board[src][1]
+                            self.board[src] = ['_', 0] # 출발지 비우기
+                            
+                            if self.board[dest][0] == '_':
+                                self.board[dest] = [opp_color, count]
+                            elif self.board[dest][0] == opp_color:
+                                self.board[dest][1] += count
+                            else: # 내 말이 잡히면
+                                self.left[self.user-1] += self.board[dest][1]
+                                self.board[dest] = [opp_color, count]
+                            
+                    # 승리 조건 동기화 쳐해
+                    if self.board[30][1] >= 3: self.gameover = 'R'
+                    if self.board[31][1] >= 3: self.gameover = 'B'
+                except Exception as e:
+                    pass
+        t = Thread(target=listen, daemon=True)
+        t.start()
     def center_to_lefttop(self, center, size):
         realcent = (int(center[0]) - (int(size[0])/2), int(center[1]) - (int(size[1])/2))
         return realcent
@@ -45,24 +113,15 @@ class Utils:
             self.turn = 'R'
         self.rollable = 1
         self.usable = []
-        if not hasattr(self, 'moveget'):
-                def get_move():
-                    while True:
-                        try:
-                            data, addr = sock.recvfrom(1024)
-                            sent_msg = data.decode('utf-8')
-                            if sent_msg == '0':
-                                self.prematch[abs(self.user-2)] = 2
-                            elif sent_msg == '1':
-                                self.prematch[abs(self.user-2)] = 1
-                            else:
-                                self.prematch[abs(self.user-2)] = 0
-                        except:
-                            pass
-                
-                thread7 = Thread(target=get_move, daemon=True)
-                thread7.start()
-                self.moveget = True
+
+        current_turn = self.turn
+        def send_turn(turn_val):
+            for _ in range(10):
+                msg = f"turn:{turn_val}".encode("utf-8")
+                sock.sendto(msg, _link.opp_addr)
+                pygame.time.delay(20)
+        thread4 = Thread(target=send_turn, args=(current_turn,))
+        thread4.start()
 
         def send_turn():
             for _ in range(10):

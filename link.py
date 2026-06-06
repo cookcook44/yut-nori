@@ -23,4 +23,6 @@ class Link:
             _utils.user = 2
             print("2p임") # 1회한정 프린트
 
+        _utils.start_listener()
+
 _link = Link()
